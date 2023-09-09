@@ -1,6 +1,7 @@
 import subprocess
 
 try:
+    print('installing Dependencies.')
     subprocess.check_call(['pip', 'install', '-r', 'requirements.txt'])
     print('Dependencies installed successfully.')
 except subprocess.CalledProcessError:
