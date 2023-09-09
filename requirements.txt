@@ -1,2 +1,4 @@
 python-dotenv
 telebot
+gradio_client
+wikipedia
