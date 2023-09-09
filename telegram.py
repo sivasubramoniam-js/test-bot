@@ -25,7 +25,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 @bot.message_handler(commands=['start', 'hello'])
 def send_welcome(message):
     print(f'Message from user : {message.from_user.first_name}')
-    bot.reply_to(message, f'Hey, how are you doing {message.from_user.first_name} ?')
+    bot.reply_to(message, f'Hey, how are you doing {message.from_user.first_name} from @codewithjss?')
 
 @bot.message_handler(func=lambda msg: True)
 def echo_all(message):
