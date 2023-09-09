@@ -1,4 +1,19 @@
 import subprocess
+import sqlite3
+
+conn = sqlite3.connect('tele_bot.db')
+cursor = conn.cursor()
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS tele_bot_record (
+    command TEXT,
+    query TEXT,
+    user TEXT,
+    userid TEXT,
+    response TEXT
+)
+''')
+conn.commit()
+conn.close()
 
 try:
     print('installing Dependencies.')
@@ -28,6 +43,10 @@ bot = telebot.TeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=['start', 'hello'])
 def send_welcome(message):
+    filtered_text = message.text[7:]
+    conn.cursor()
+    cursor.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('start',filtered_text,message.from_user.first_name,message.from_user.username, f'Hey, how are you doing {message.from_user.first_name} - from @codewithjss?'))
+    conn.commit()
     print(f'Message from user : {message.from_user.first_name}')
     bot.reply_to(message, f'Hey, how are you doing {message.from_user.first_name} - from @codewithjss?')
 
@@ -41,6 +60,9 @@ def process_req(message):
                 2048,
 				api_name="/predict"
     )
+    conn.cursor()
+    cursor.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('chat',filtered_text,message.from_user.first_name,message.from_user.username, result))
+    conn.commit()
     bot.reply_to(message, result)
 
 @bot.message_handler(commands=['summary'])
@@ -48,14 +70,19 @@ def get_summary(message):
     print(f'Message from user : {message.from_user.first_name}')
     filtered_text = message.text.removeprefix('/summary ')
     result = search('summary', filtered_text)
+    conn.cursor()
+    cursor.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('summary',filtered_text,message.from_user.first_name,message.from_user.username, result))
+    conn.commit()
     bot.reply_to(message, result)
-
 
 @bot.message_handler(commands=['description'])
 def get_desc(message):
     print(f'Message from user : {message.from_user.first_name}')
     filtered_text = message.text.removeprefix('/description ')
     result = search('description', filtered_text)
+    conn.cursor()
+    cursor.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('description',filtered_text,message.from_user.first_name,message.from_user.username, result))
+    conn.commit()
     bot.reply_to(message, result)
 
 @bot.message_handler(func=lambda msg: True)

@@ -9,7 +9,7 @@ def search(type,search_query):
         try:
             # Get the summary of the page
             summary = wikipedia.summary(search_query)
-            return(f"**Summary of '{search_query}':\n{summary}\n**")
+            return(f"**Summary of '{search_query}'** \n{summary}\n")
 
         except wikipedia.exceptions.PageError:
             return(f"'{search_query}' page not found on wikipedia.")
@@ -21,7 +21,7 @@ def search(type,search_query):
         try:
             # Get the full text of the page
             full_text = wikipedia.page(search_query).content
-            return(f"**Description of '{search_query}':\n{full_text}**")
+            return(f"**Description of '{search_query}'**:\n{full_text}")
 
         except wikipedia.exceptions.PageError:
             return(f"'{search_query}' page not found on wikipedia.")
