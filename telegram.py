@@ -1,7 +1,7 @@
 import subprocess
 import sqlite3
 
-conn = sqlite3.connect('tele_bot.db')
+conn = sqlite3.connect('tele_bot.db', check_same_thread=False)
 cursor = conn.cursor()
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS tele_bot_record (
