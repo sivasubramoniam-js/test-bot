@@ -100,7 +100,6 @@ def handle_keyword_search(message):
     
     yt = YouTube(video_url)
     available_formats = yt.streams.filter(only_audio=True, mime_type="audio/mp4").all()
-    print(available_formats)
     markup = types.InlineKeyboardMarkup()
     for i, fmt in enumerate(available_formats):
         markup.add(types.InlineKeyboardButton(f"Download {fmt.abr}",callback_data=f'Download {video_url},{fmt.abr}'))
@@ -115,10 +114,8 @@ def handle_download_request(message):
     video_url = extract[0]
     yt = YouTube(video_url)
     mp3_file_path = f'{yt.title}-{selected_format}.mp3'
-    print(mp3_file_path)
     mp3_stream = yt.streams.filter(only_audio=True, abr=selected_format, mime_type="audio/mp4").first()
     mp3_stream.download(filename=mp3_file_path)
-    print(f'Sending audio to {message.from_user.id}')
     # # Download the external thumbnail image
     thumbnail_response = requests.get(yt.thumbnail_url)
     thumbnail_file = BytesIO(thumbnail_response.content)
@@ -147,7 +144,6 @@ def handle_video_keyword_search(message):
 
     markup = types.InlineKeyboardMarkup()
     for i, fmt in enumerate(available_formats):
-        print(fmt)
         markup.add(types.InlineKeyboardButton(f"Download {fmt.resolution} video",callback_data=f'{video_url},{fmt.resolution} Download'))
 
     bot.send_message(message.chat.id, "Select a format to download:", reply_markup=markup)
@@ -165,8 +161,7 @@ def handle_video_download_request(message):
     if response.status_code == 200:
     # Create a BytesIO object and write the video content to it
         video_bytesio = BytesIO(response.content)
-        print(message)
-        time.sleep(2)
+        time.sleep(1)
         bot.send_video(message.from_user.id, video_bytesio, caption=mp4_file_path)
 
 @bot.message_handler(func=lambda msg: True)
