@@ -1,22 +1,10 @@
 import subprocess
+import time
 import sqlite3
 
 conn = sqlite3.connect('tele_bot.db', check_same_thread=False)
-cursor = conn.cursor()
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS tele_bot_record (
-    command TEXT,
-    query TEXT,
-    user TEXT,
-    userid TEXT,
-    response TEXT
-)
-''')
-conn.commit()
-conn.close()
 
 try:
-    print('installing Dependencies.')
     subprocess.check_call(['pip3', 'install', '-r', 'requirements.txt'])
     print('Dependencies installed successfully.')
 except subprocess.CalledProcessError:
@@ -28,6 +16,11 @@ import os
 from dotenv import load_dotenv
 from gradio_client import Client
 from wiki import search
+from pytube import YouTube
+from youtube_search import YoutubeSearch
+from telebot import types
+import requests
+from io import BytesIO
 
 client = Client("http://47.103.63.15:50085/")
 
@@ -44,11 +37,12 @@ bot = telebot.TeleBot(BOT_TOKEN)
 @bot.message_handler(commands=['start', 'hello'])
 def send_welcome(message):
     filtered_text = message.text[7:]
-    conn.cursor()
-    cursor.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('start',filtered_text,message.from_user.first_name,message.from_user.username, f'Hey, how are you doing {message.from_user.first_name} - from @codewithjss?'))
+    c = conn.cursor()
+    c.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('start',filtered_text,message.from_user.first_name,message.from_user.username, f'Hey, how are you doing {message.from_user.first_name} - from @codewithjss?'))
     conn.commit()
+    c.close()
     print(f'Message from user : {message.from_user.first_name}')
-    bot.reply_to(message, f'Hey, how are you doing {message.from_user.first_name} - from @codewithjss?')
+    bot.reply_to(message, f'Hey, how are you doing ? {message.from_user.first_name} \n\n - from @codewithjss?')
 
 @bot.message_handler(commands=['chat'])
 def process_req(message):
@@ -60,9 +54,10 @@ def process_req(message):
                 2048,
 				api_name="/predict"
     )
-    conn.cursor()
-    cursor.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('chat',filtered_text,message.from_user.first_name,message.from_user.username, result))
+    c = conn.cursor()
+    c.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('chat',filtered_text,message.from_user.first_name,message.from_user.username, result))
     conn.commit()
+    c.close()
     bot.reply_to(message, result)
 
 @bot.message_handler(commands=['summary'])
@@ -70,9 +65,10 @@ def get_summary(message):
     print(f'Message from user : {message.from_user.first_name}')
     filtered_text = message.text.removeprefix('/summary ')
     result = search('summary', filtered_text)
-    conn.cursor()
-    cursor.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('summary',filtered_text,message.from_user.first_name,message.from_user.username, result))
+    c = conn.cursor()
+    c.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('summary',filtered_text,message.from_user.first_name,message.from_user.username, result))
     conn.commit()
+    c.close()
     bot.reply_to(message, result)
 
 @bot.message_handler(commands=['description'])
@@ -80,15 +76,102 @@ def get_desc(message):
     print(f'Message from user : {message.from_user.first_name}')
     filtered_text = message.text.removeprefix('/description ')
     result = search('description', filtered_text)
-    conn.cursor()
-    cursor.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('description',filtered_text,message.from_user.first_name,message.from_user.username, result))
+    c = conn.cursor()
+    c.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('description',filtered_text,message.from_user.first_name,message.from_user.username, result))
     conn.commit()
+    c.close()
     bot.reply_to(message, result)
+
+@bot.message_handler(commands=['song'])
+def handle_keyword_search(message):
+    keyword = message.text
+
+    # Use youtube_search library to search for videos based on the keyword
+    results = YoutubeSearch(keyword, max_results=1).to_dict()
+    sorted_results = results[0]
+    if not sorted_results:
+        bot.send_message(message.chat.id, "No audio found for the given keyword.")
+        return
+    
+    video_id = sorted_results['id']
+
+    # Construct the YouTube video URL
+    video_url = f"https://www.youtube.com/watch?v={video_id}"
+    
+    yt = YouTube(video_url)
+    available_formats = yt.streams.filter(only_audio=True, mime_type="audio/mp4").all()
+    print(available_formats)
+    markup = types.InlineKeyboardMarkup()
+    for i, fmt in enumerate(available_formats):
+        markup.add(types.InlineKeyboardButton(f"Download {fmt.abr}",callback_data=f'Download {video_url},{fmt.abr}'))
+
+    bot.send_message(message.chat.id, "Select a format to download:", reply_markup=markup)
+
+
+@bot.callback_query_handler(func=lambda message: message.data.startswith("Download "))
+def handle_download_request(message):
+    extract = (message.data.replace("Download ", "")).split(',')
+    selected_format = extract[1]
+    video_url = extract[0]
+    yt = YouTube(video_url)
+    mp3_file_path = f'{yt.title}-{selected_format}.mp3'
+    print(mp3_file_path)
+    mp3_stream = yt.streams.filter(only_audio=True, abr=selected_format, mime_type="audio/mp4").first()
+    mp3_stream.download(filename=mp3_file_path)
+    print(f'Sending audio to {message.from_user.id}')
+    # # Download the external thumbnail image
+    thumbnail_response = requests.get(yt.thumbnail_url)
+    thumbnail_file = BytesIO(thumbnail_response.content)
+    thumbnail_file.name = f'{yt.title}-{selected_format}.png'
+    bot.send_document(message.from_user.id, open(mp3_file_path, 'rb'),caption=mp3_file_path, thumbnail=thumbnail_file)
+    os.remove(mp3_file_path)
+
+@bot.message_handler(commands=['video'])
+def handle_video_keyword_search(message):
+    keyword = message.text
+
+    # Use youtube_search library to search for videos based on the keyword
+    results = YoutubeSearch(keyword, max_results=1).to_dict()
+    sorted_results = results[0]
+    if not sorted_results:
+        bot.send_message(message.chat.id, "No video found for the given keyword.")
+        return
+    
+    video_id = sorted_results['id']
+
+    # Construct the YouTube video URL
+    video_url = f"https://www.youtube.com/watch?v={video_id}"
+    
+    yt = YouTube(video_url)
+    available_formats = yt.streams.filter(mime_type="video/mp4",progressive=True).all()
+
+    markup = types.InlineKeyboardMarkup()
+    for i, fmt in enumerate(available_formats):
+        print(fmt)
+        markup.add(types.InlineKeyboardButton(f"Download {fmt.resolution} video",callback_data=f'{video_url},{fmt.resolution} Download'))
+
+    bot.send_message(message.chat.id, "Select a format to download:", reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda message: message.data.endswith(" Download"))
+def handle_video_download_request(message):
+    extract = (message.data.replace(" Download", "")).split(',')
+    selected_format = extract[1]
+    video_url = extract[0]
+    yt = YouTube(video_url)
+    mp4_file_path = f'{yt.title}-{selected_format}.mp4'
+    reqUrl = yt.streams.filter(resolution=selected_format, mime_type="video/mp4", progressive=True).first().url
+
+    response = requests.get(reqUrl)
+    if response.status_code == 200:
+    # Create a BytesIO object and write the video content to it
+        video_bytesio = BytesIO(response.content)
+        print(message)
+        time.sleep(2)
+        bot.send_video(message.from_user.id, video_bytesio, caption=mp4_file_path)
 
 @bot.message_handler(func=lambda msg: True)
 def echo_all(message):
     bot.reply_to(message, message.text)
 
 if __name__ == '__main__':
-    print('polling start')
     bot.infinity_polling()
