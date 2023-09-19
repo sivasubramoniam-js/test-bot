@@ -42,7 +42,7 @@ def send_welcome(message):
     conn.commit()
     c.close()
     print(f'Message from user : {message.from_user.first_name}')
-    bot.reply_to(message, f'Hey, how are you doing ? {message.from_user.first_name} \n\n - from @codewithjss?')
+    bot.reply_to(message, f'Hey, how are you doing {message.from_user.first_name} ? \n\n - from @codewithjss')
 
 @bot.message_handler(commands=['chat'])
 def process_req(message):
