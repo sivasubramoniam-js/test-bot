@@ -14,7 +14,7 @@ import telebot
 import ssl
 import os
 from dotenv import load_dotenv
-from gradio_client import Client
+#from gradio_client import Client
 from wiki import search
 from pytube import YouTube
 from youtube_search import YoutubeSearch
@@ -22,7 +22,7 @@ from telebot import types
 import requests
 from io import BytesIO
 
-client = Client("http://47.103.63.15:50085/")
+#client = Client("http://47.103.63.15:50085/")
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
