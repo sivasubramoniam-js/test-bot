@@ -4,3 +4,4 @@ gradio_client
 wikipedia
 pytube
 youtube_search
+google.generativeai
