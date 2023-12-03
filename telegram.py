@@ -4,7 +4,7 @@ import sqlite3
 import google.generativeai as palm
 
 conn = sqlite3.connect('tele_bot.db', check_same_thread=False)
-palm.configure(apikey='AIzaSyD4ChJeYG8pndGSikGTUTAQLrq5ZVcGkBA')
+palm.configure(api_key='AIzaSyD4ChJeYG8pndGSikGTUTAQLrq5ZVcGkBA')
 
 try:
     subprocess.check_call(['pip3', 'install', '-r', 'requirements.txt'])
