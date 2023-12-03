@@ -1,8 +1,10 @@
 import subprocess
 import time
 import sqlite3
+import google.generativeai as palm
 
 conn = sqlite3.connect('tele_bot.db', check_same_thread=False)
+palm.configure(apikey='AIzaSyD4ChJeYG8pndGSikGTUTAQLrq5ZVcGkBA')
 
 try:
     subprocess.check_call(['pip3', 'install', '-r', 'requirements.txt'])
@@ -48,12 +50,8 @@ def send_welcome(message):
 def process_req(message):
     print(f'Message from user : {message.from_user.first_name}')
     filtered_text = message.text.removeprefix('/chat ')
-    result = client.predict(
-				filtered_text,	# str in 'Instruction' Textbox component
-				1,
-                2048,
-				api_name="/predict"
-    )
+    response = palm.generate_text(prompt=filtered_text)
+    result = response.result
     c = conn.cursor()
     c.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('chat',filtered_text,message.from_user.first_name,message.from_user.username, result))
     conn.commit()
