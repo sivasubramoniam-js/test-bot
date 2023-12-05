@@ -175,8 +175,8 @@ API_URL = "https://api-inference.huggingface.co/models/runwayml/stable-diffusion
 headers = {"Authorization": f"Bearer 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"}
 
 def query_img(payload):
-	response = requests.post(API_URL, headers=headers, json=payload)
-	return response.content
+    response = requests.post(API_URL, headers=headers, json=payload)
+    return response.content
 
 @bot.message_handler(commands=['image'])
 def get_img(message):
