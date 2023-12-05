@@ -192,7 +192,7 @@ def get_img(message):
 
 @bot.message_handler(func=lambda msg: True)
 def echo_all(message):
-    bot.reply_to(message, message.text)
+    bot.reply_to(message, "Please send a message in the format /command yourquery")
 
 if __name__ == '__main__':
     bot.infinity_polling()
