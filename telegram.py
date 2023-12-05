@@ -192,10 +192,10 @@ def get_img(message):
 
 @bot.message_handler(func=lambda msg: True)
 def echo_all(message):
-    bot.reply_to(message, "Please send a message in the format /command yourquery")
+    bot.reply_to(message, "Please send a message in the format \n/command yourquery")
 
 if __name__ == '__main__':
-    bot.infinity_polling()
     while True:
+        bot.infinity_polling()
         bot.send_message(5713740053, 'I am awake')
         time.sleep(3600*3)
