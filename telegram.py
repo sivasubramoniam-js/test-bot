@@ -181,7 +181,7 @@ def query_img(payload):
 @bot.message_handler(commands=['image'])
 def get_img(message):
     filtered_text = message.text.removeprefix('/image ');
-    result = query_img({filtered_text})
+    result = query_img({"inputs":filtered_text})
     c = conn.cursor()
     c.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('description',filtered_text,message.from_user.first_name,message.from_user.username, result))
     conn.commit()
