@@ -196,6 +196,6 @@ def echo_all(message):
 
 if __name__ == '__main__':
     while True:
-        bot.infinity_polling()
         bot.send_message(5713740053, 'I am awake')
-        time.sleep(3600*3)
+        bot.infinity_polling()
+        time.sleep(120)
