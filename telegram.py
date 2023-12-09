@@ -47,6 +47,10 @@ def send_welcome(message):
     bot.reply_to(message, f'Hey, how are you doing {message.from_user.first_name} ? \n\n - from @codewithjss')
     bot.send_message(5713740053, f'{message.from_user.first_name} - {message.from_user.username} : {message.text}')
 
+@bot.message_handler(commands=['activate'])
+def activate_bot():
+    bot.send_message(5713740053, "I am active")
+
 @bot.message_handler(commands=['chat'])
 def process_req(message):
     print(f'Message from user : {message.from_user.first_name}')
