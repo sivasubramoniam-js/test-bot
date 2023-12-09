@@ -49,7 +49,9 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['activate'])
 def activate_bot():
-    bot.send_message(5713740053, "I am active")
+    while True:
+        bot.send_message(5713740053, "I am active")
+        time.sleep(10)
 
 @bot.message_handler(commands=['chat'])
 def process_req(message):
