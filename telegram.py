@@ -195,10 +195,7 @@ def echo_all(message):
     bot.reply_to(message, "Please send a message in the format \n/command yourquery")
 
 if __name__ == '__main__':
-    i=0
     while True:
         bot.send_message(5713740053, 'I am awake')
-        if i==0:
-            i++
-            bot.infinity_polling()
-        time.sleep(120)
+        bot.infinity_polling()
+        time.sleep(3600)
