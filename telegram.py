@@ -1,10 +1,10 @@
 import subprocess
 import time
 import sqlite3
-import google.generativeai as palm
+import google.generativeai as genai
 
 conn = sqlite3.connect('tele_bot.db', check_same_thread=False)
-palm.configure(api_key='AIzaSyD4ChJeYG8pndGSikGTUTAQLrq5ZVcGkBA')
+genai.configure(api_key='AIzaSyD4ChJeYG8pndGSikGTUTAQLrq5ZVcGkBA')
 text_model = genai.GenerativeModel('gemini-pro')
 
 try:
