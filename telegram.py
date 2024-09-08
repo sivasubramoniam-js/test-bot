@@ -59,7 +59,7 @@ def process_req(message):
     print(f'Message from user : {message.from_user.first_name}')
     filtered_text = message.text.removeprefix('/chat ')
     response = text_model.generate_content(filtered_text)
-    result = response.result
+    result = response.text
     c = conn.cursor()
     c.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('chat',filtered_text,message.from_user.first_name,message.from_user.username, result))
     conn.commit()
