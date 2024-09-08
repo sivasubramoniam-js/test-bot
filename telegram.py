@@ -5,6 +5,7 @@ import google.generativeai as palm
 
 conn = sqlite3.connect('tele_bot.db', check_same_thread=False)
 palm.configure(api_key='AIzaSyD4ChJeYG8pndGSikGTUTAQLrq5ZVcGkBA')
+text_model = genai.GenerativeModel('gemini-pro')
 
 try:
     subprocess.check_call(['pip3', 'install', '-r', 'requirements.txt'])
@@ -57,7 +58,7 @@ def activate_bot():
 def process_req(message):
     print(f'Message from user : {message.from_user.first_name}')
     filtered_text = message.text.removeprefix('/chat ')
-    response = palm.generate_text(prompt=filtered_text)
+    response = text_model.generate_content(filtered_text)
     result = response.result
     c = conn.cursor()
     c.execute("INSERT INTO tele_bot_record (command, query, user, userid, response) VALUES (?, ?, ?, ?, ?)", ('chat',filtered_text,message.from_user.first_name,message.from_user.username, result))
