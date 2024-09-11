@@ -8,17 +8,10 @@ import sys
 from db import create_database, insert_into_db
 
 try:
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'])
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements_insta.txt'])
 except subprocess.CalledProcessError as e:
     print(f"An error occurred while installing packages: {e}")
 
-import pkg_resources
-required_packages = ['flask', 'flask-cors', 'streamlit','Pillow']
-installed_packages = [pkg.key for pkg in pkg_resources.working_set]
-
-for package in required_packages:
-    if package not in installed_packages:
-        print(f"Package not found")
 
 #try:
 #    subprocess.check_call(['pip3', 'install', '-r', 'requirements_insta.txt'])
