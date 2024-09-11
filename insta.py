@@ -24,11 +24,11 @@ text_model = genai.GenerativeModel('gemini-1.5-flash')
 # ssl._create_default_https_context = ssl._create_unverified_context
 
 
-#from flask_cors import CORS
+# from flask_cors import CORS
 from flask import Flask, jsonify, request, render_template
 
 app = Flask(__name__,template_folder='./',static_folder='../frontend/build/static')
-#CORS(app)
+# CORS(app)
 
 @app.route('/')
 def index():
