@@ -1,2 +1,4 @@
 google.generativeai
 Pillow
+flask
+flask_cors
