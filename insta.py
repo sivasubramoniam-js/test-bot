@@ -9,6 +9,7 @@ from db import create_database, insert_into_db
 
 try:
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements_insta.txt'])
+    print("installation success")
 except subprocess.CalledProcessError as e:
     print(f"An error occurred while installing packages: {e}")
 
