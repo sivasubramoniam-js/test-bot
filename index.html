@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f58529, #feda75, #fa7e1e, #d62976, #962fbf);
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            min-height: calc(100vh - 80px);
+            background: #ffffff4f;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        #preview {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        video, img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+
+        #slider-container {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        input[type="range"] {
+            width: 80%;
+            margin: 10px 0;
+        }
+
+        button {
+            background: #ffffff61;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            display: block;
+            margin: 20px auto;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #f58529, #feda75, #fa7e1e, #d62976, #962fbf);
+        }
+
+        .alert {
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .theme-container {
+            margin-top: 20px;
+        }
+
+.results-container {
+    margin-top: 20px;
+}
+
+.results-container h2 {
+    margin-top: 0;
+}
+
+.results-container ul {
+    list-style: none;
+    padding: 0;
+}
+
+.results-container li {
+    margin-bottom: 10px;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Instagram Assistant</h1>
+
+        <form id="upload-form">
+            <button>
+            <label for="file-upload">Cick here Upload Image/Video:</label>
+            <input type="file" id="file-upload" style="display: none;" accept="image/*,video/*" required>
+            </button>
+            <div id="preview"></div>
+            
+            <div id="slider-container">
+                <label for="video-slider">Video Timeframe:</label>
+                <input type="range" id="video-slider" min="0" step="0.1">
+                <p>Current Time: <span id="current-time">0</span> seconds</p>
+            </div>
+
+            <div class="theme-container">
+                <label for="theme">Enter Theme:</label>
+                <input type="text" id="theme" required>
+            </div>
+            
+            <button type="button" onclick="submitForm()">Generate</button>
+        </form>
+
+        <div id="error-message" class="alert"></div>
+        <h2>Results</h2>
+        <div class="results-container" id="results-container" style="display: none; justify-content: space-between;">
+            <div>
+                <h3>Captions</h3>
+                <ul id="captions-list"></ul>
+            </div>
+            <div>
+                <h3>Hashtags</h3>
+                <ul id="hashtags-list"></ul>
+            </div>
+            <div>
+                <h3>Recommended Songs</h3>
+                <ul id="songs-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-upload');
+        const preview = document.getElementById('preview');
+        const sliderContainer = document.getElementById('slider-container');
+        const videoSlider = document.getElementById('video-slider');
+        const currentTimeDisplay = document.getElementById('current-time');
+        const errorMessage = document.getElementById('error-message');
+        let currentVideo = null;
+        let currentImage = null;
+        let currentFrame = null;
+
+        fileInput.addEventListener('change', handleFileUpload);
+
+        function displayResults(data) {
+
+        const resultsContainer = document.getElementById('results-container');
+        const captionsList = document.getElementById('captions-list');
+        const hashtagsList = document.getElementById('hashtags-list');
+        const songsList = document.getElementById('songs-list');
+            resultsContainer.style.display = 'flex';
+
+            // Populate captions
+            captionsList.innerHTML = '';
+            data.captions.forEach(caption => {
+                const li = document.createElement('li');
+                li.textContent = caption;
+                captionsList.appendChild(li);
+            });
+
+            // Populate hashtags
+            hashtagsList.innerHTML = '';
+            data.hashtags.forEach(hashtag => {
+                const li = document.createElement('li');
+                li.textContent = "#"+hashtag;
+                hashtagsList.appendChild(li);
+            });
+
+            // Populate recommended songs
+            songsList.innerHTML = '';
+            data.recommended_songs.forEach(song => {
+                const li = document.createElement('li');
+                li.textContent = song;
+                songsList.appendChild(li);
+            });
+        }
+
+        function convertImageToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    resolve(reader.result);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function handleFileUpload() {
+            const file = fileInput.files[0];
+            if (!file) return;
+            
+            const fileURL = URL.createObjectURL(file);
+            preview.innerHTML = ''; // Clear previous preview
+
+            if (file.type.startsWith('video/')) {
+                // Handle video file
+                const videoElement = document.createElement('video');
+                videoElement.src = fileURL;
+                videoElement.controls = true;
+                preview.appendChild(videoElement);
+
+                // Setup slider
+                sliderContainer.style.display = 'block';
+                videoElement.addEventListener('loadedmetadata', () => {
+                    videoSlider.max = videoElement.duration;
+                    videoSlider.value = 0;
+                });
+
+                videoSlider.addEventListener('input', () => {
+                    currentTimeDisplay.textContent = videoSlider.value;
+                    videoElement.currentTime = videoSlider.value;
+                });
+
+                videoElement.addEventListener('seeked', () => {
+                    if (videoElement.currentTime === parseFloat(videoSlider.value)) {
+                        captureFrame(videoElement);
+                    }
+                });
+                currentImage = null;
+                currentVideo = file;
+            } else if (file.type.startsWith('image/')) {
+                convertImageToBase64(file).then(base64Image => {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = base64Image;
+                    currentImage = base64Image;
+                    preview.appendChild(imgElement);
+                    sliderContainer.style.display = 'none'; // Hide slider
+                });
+                currentVideo = null;
+            }
+        }
+
+        function captureFrame(videoElement) {
+            const canvas = document.createElement('canvas');
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            currentFrame = canvas.toDataURL('image/png');
+        }
+
+        function submitForm() {
+            const theme = document.getElementById('theme').value;
+            if (!theme || (!currentVideo && !currentFrame && !currentImage)) {
+                errorMessage.textContent = 'Please upload a file and enter a theme.';
+                return;
+            }
+            errorMessage.textContent = ''; // Clear error message
+
+            const formData = new FormData();
+            formData.append('type', currentVideo ? 'video' : 'image');
+            if (currentVideo) {
+                formData.append('data', currentFrame || ''); // Attach video file if needed
+            } else {
+                formData.append('data', preview.querySelector('img').src);
+            }
+            formData.append('theme', theme);
+
+            fetch('/generate', { // Replace with your API endpoint
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                displayResults(data.result)
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while submitting data.');
+            });
+        }
+    </script>
+</body>
+</html>
