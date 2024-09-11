@@ -4,6 +4,7 @@ import sqlite3
 import base64
 from PIL import Image
 import io
+import sys
 from db import create_database, insert_into_db
 
 try:
