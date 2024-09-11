@@ -5,11 +5,11 @@ import base64
 from PIL import Image
 import io
 from db import create_database, insert_into_db
-# try:
-#     subprocess.check_call(['pip3', 'install', '-r', 'requirements.txt'])
-#     print('Dependencies installed successfully.')
-# except subprocess.CalledProcessError:
-#     print('Failed to install dependencies.')
+try:
+    subprocess.check_call(['pip3', 'install', '-r', 'requirements_insta.txt'])
+    print('Dependencies installed successfully.')
+except subprocess.CalledProcessError:
+    print('Failed to install dependencies.')
 from PIL import Image
 import json
 import re
